@@ -3,36 +3,19 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Dashboard | KrishiMitra</title>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <link rel="stylesheet" href="dashboard.css" />
+  <title>KrishiMitra Dashboard</title>
 </head>
 <body>
-  <div class="navbar">
-    <h1>🌾 KrishiMitra Dashboard</h1>
-    <button onclick="logoutUser()">Logout</button>
-  </div>
+  <h1>Welcome to KrishiMitra Dashboard</h1>
+  <p>Email: <span id="userEmail"></span></p>
+  <p>Name: <span id="userName"></span></p>
+  <p>Role: <span id="userRole"></span></p>
+  <p>Tip of the day: <span id="tipText"></span></p>
+  
+  <button onclick="logoutUser()">Logout</button>
 
-  <div class="dashboard-container">
-    <div class="user-card">
-      <h2>👤 User Info</h2>
-      <p><b>Name:</b> <span id="userName">Loading...</span></p>
-      <p><b>Email:</b> <span id="userEmail">Loading...</span></p>
-      <p><b>Role:</b> <span id="userRole">Loading...</span></p>
-    </div>
-
-    <div class="weather-card">
-      <h2>🌦️ Weather</h2>
-      <p id="weatherInfo">Coming soon...</p>
-    </div>
-
-    <div class="tips-card">
-      <h2>🌱 Farming Tips</h2>
-      <p id="tipText">Loading tips...</p>
-    </div>
-  </div>
-
+  <!-- Order matters -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="dashboard.js"></script>
 </body>
 </html>
