@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>🌿 RogiScan – Smart Plant Doctor</title>
+  <style>
+    body {
+      font-family: "Segoe UI", sans-serif;
+      background: linear-gradient(135deg, #f0fdf4, #e6fffa);
+      padding: 2rem;
+      color: #1a202c;
+    }
+    h1 {
+      color: #2f855a;
+      text-align: center;
+      margin-bottom: 1.5rem;
+      font-size: 2rem;
+    }
+    .container {
+      max-width: 600px;
+      background: #ffffff;
+      padding: 2rem;
+      margin: 0 auto;
+      border-radius: 14px;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    }
+    #preview {
+      display: none;
+      width: 100%;
+      max-height: 250px;
+      object-fit: contain;
+      border-radius: 8px;
+      margin-bottom: 1rem;
+      border: 1px solid #d1fae5;
+    }
+    input,
+    button {
+      width: 100%;
+      padding: 0.8rem;
+      font-size: 1rem;
+      margin-top: 0.6rem;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      transition: all 0.2s ease;
+    }
+    input:hover, button:hover {
+      transform: scale(1.02);
+    }
+    button {
+      cursor: pointer;
+      background-color: #38a169;
+      color: white;
+      border: none;
+      font-weight: bold;
+      transition: background 0.3s;
+    }
+    button:hover {
+      background-color: #2f855a;
+    }
+    #loading {
+      display: none;
+      text-align: center;
+      color: #276749;
+      font-weight: 600;
+      margin-top: 1rem;
+    }
+    #result {
+      white-space: pre-wrap;
+      background: #f9fafb;
+      padding: 1rem;
+      margin-top: 1.2rem;
+      border-radius: 10px;
+      box-shadow: 0 0 5px rgba(0, 0, 0, 0.08);
+      min-height: 100px;
+      font-size: 1rem;
+    }
+    .footer {
+      text-align: center;
+      color: #4a5568;
+      font-size: 0.9rem;
+      margin-top: 2rem;
+    }
+    .footer span {
+      color: #38a169;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <h1>🌿 RogiScan – Smart Plant Doctor</h1>
+
+  <div class="container">
+    <input type="file" id="imageInput" accept="image/*" />
+    <img id="preview" alt="Preview" />
+    <button id="classifyBtn">🌾 Scan Plant Disease</button>
+
+    <div id="loading">🔍 Analyzing image... Please wait.</div>
+    <pre id="result">Upload an image of your plant leaf to begin.</pre>
+  </div>
+
+  <div class="footer">
+    Powered by <span>Hugging Face</span> × <span>OpenRouter</span> × <span>KrishiMitra</span>
+  </div>
+
+  <script>
+    const FUNCTION_URL = "https://kghafvoigkbcnpsikeow.supabase.co/functions/v1/hf_image_with_recommendation"; // your deployed Edge Function
+    const ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtnaGFmdm9pZ2tiY25wc2lrZW93Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjA0ODI4OTIsImV4cCI6MjA3NjA1ODg5Mn0.F-b888j82DAx-IIkQacyQnJS1eBXnZdYVL8y_AI50DI";
+
+    const input = document.getElementById("imageInput");
+    const preview = document.getElementById("preview");
+    const btn = document.getElementById("classifyBtn");
+    const result = document.getElementById("result");
+    const loading = document.getElementById("loading");
+
+    // 🖼 Preview selected image
+    input.addEventListener("change", () => {
+      const file = input.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = () => {
+          preview.src = reader.result;
+          preview.style.display = "block";
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+
+    // ⚙️ Handle classification
+    btn.onclick = async () => {
+      const file = input.files[0];
+      if (!file) return alert("Please select a plant image first!");
+
+      result.textContent = "";
+      loading.style.display = "block";
+
+      const reader = new FileReader();
+      reader.onload = async () => {
+        const base64Image = reader.result.split(",")[1];
+        try {
+          const res = await fetch(FUNCTION_URL, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${ANON_KEY}`,
+            },
+            body: JSON.stringify({ imageBase64: base64Image }),
+          });
+
+          const data = await res.json();
+          loading.style.display = "none";
+
+          if (!res.ok) {
+            result.textContent = `❌ Error: ${data.error || data.message || res.statusText}`;
+            return;
+          }
+
+          // 🧠 Display final output
+          result.innerHTML = `
+✅ <b>Prediction:</b> ${data.prediction}<br>
+📊 <b>Confidence:</b> ${data.confidence}<br><br>
+🌿 <b>Recommendation:</b><br>${data.recommendation?.trim() || "No recommendation available."}
+          `;
+        } catch (err) {
+          loading.style.display = "none";
+          result.textContent = `⚠️ Error: ${err.message}`;
+        }
+      };
+      reader.readAsDataURL(file);
+    };
+  </script>
+</body>
+</html>
